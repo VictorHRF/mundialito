@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { CalendarDays, ListChecks, Trophy } from "lucide-react";
+import { DashboardGreeting } from "@/components/dashboard-greeting";
 import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard } from "@/components/matches/match-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getMatches, getProfile, getRanking } from "@/lib/actions/queries";
+import { ensureProfile, getMatches, getRanking } from "@/lib/actions/queries";
 
 export default async function DashboardPage() {
-  const [profile, matches, ranking] = await Promise.all([getProfile(), getMatches(), getRanking()]);
+  const [profile, matches, ranking] = await Promise.all([ensureProfile(), getMatches(), getRanking()]);
   const me = ranking.find((row) => row.user_id === profile?.id);
   const upcoming = matches.filter((match) => match.status !== "finished").slice(0, 3);
   const pending = matches.filter((match) => !match.user_prediction && match.status !== "finished");
@@ -16,9 +17,7 @@ export default async function DashboardPage() {
     <AppShell>
       <div className="mb-6">
         <p className="text-sm font-semibold text-primary">Dashboard</p>
-        <h1 className="text-2xl font-bold tracking-normal md:text-3xl">
-          Hola, {profile?.name ?? "familia"}
-        </h1>
+        <DashboardGreeting fallbackName={profile?.name} />
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <Card>

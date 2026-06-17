@@ -26,6 +26,34 @@ export async function getProfile(): Promise<Profile | null> {
   return data as Profile | null;
 }
 
+export async function ensureProfile(): Promise<Profile | null> {
+  const supabase = await createClient();
+  const user = await getCurrentUser();
+  if (!user) return null;
+
+  const existing = await getProfile();
+  if (existing) return existing;
+
+  const fallbackName =
+    typeof user.user_metadata?.name === "string" && user.user_metadata.name.length > 0
+      ? user.user_metadata.name
+      : user.email?.split("@")[0] ?? "Participante";
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .insert({
+      id: user.id,
+      name: fallbackName,
+      role: "player",
+    })
+    .select("*")
+    .single();
+
+  if (error) return null;
+
+  return data as Profile | null;
+}
+
 export async function getActivePool(): Promise<Pool | null> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -44,10 +72,10 @@ export async function ensurePoolMembership(): Promise<Pool | null> {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [profile, pool] = await Promise.all([getProfile(), getActivePool()]);
+  const [profile, pool] = await Promise.all([ensureProfile(), getActivePool()]);
   if (!pool) return null;
 
-  await supabase.from("pool_members").upsert(
+  const { error } = await supabase.from("pool_members").upsert(
     {
       pool_id: pool.id,
       user_id: user.id,
@@ -55,6 +83,8 @@ export async function ensurePoolMembership(): Promise<Pool | null> {
     },
     { onConflict: "pool_id,user_id" },
   );
+
+  if (error) return null;
 
   return pool;
 }

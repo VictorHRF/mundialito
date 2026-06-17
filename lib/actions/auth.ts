@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { ensureProfile } from "@/lib/actions/queries";
 import { loginSchema, registerSchema } from "@/lib/validations/auth-schema";
 
 export type ActionState = {
@@ -24,7 +25,18 @@ export async function signIn(_state: ActionState, formData: FormData): Promise<A
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return { ok: false, message: "No pudimos iniciar sesión. Revisa tus datos." };
+    return {
+      ok: false,
+      message: `No pudimos iniciar sesión: ${error.message}`,
+    };
+  }
+
+  const profile = await ensureProfile();
+  if (!profile) {
+    return {
+      ok: false,
+      message: "Iniciaste sesión, pero no pudimos crear tu perfil. Revisa las políticas de Supabase.",
+    };
   }
 
   revalidatePath("/", "layout");
@@ -54,14 +66,26 @@ export async function signUp(_state: ActionState, formData: FormData): Promise<A
   });
 
   if (error || !data.user) {
-    return { ok: false, message: "No pudimos crear la cuenta. Intenta con otro correo." };
+    return {
+      ok: false,
+      message: `No pudimos crear la cuenta: ${error?.message ?? "Supabase no regresó usuario."}`,
+    };
   }
 
-  await supabase.from("profiles").upsert({
-    id: data.user.id,
-    name: parsed.data.name,
-    role: "player",
-  });
+  if (!data.session) {
+    return {
+      ok: true,
+      message: "Cuenta creada. Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.",
+    };
+  }
+
+  const profile = await ensureProfile();
+  if (!profile) {
+    return {
+      ok: false,
+      message: "Cuenta creada, pero no pudimos crear tu perfil. Revisa las políticas de Supabase.",
+    };
+  }
 
   revalidatePath("/", "layout");
   redirect("/dashboard");

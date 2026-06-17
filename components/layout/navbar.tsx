@@ -1,13 +1,7 @@
 import Link from "next/link";
-import { Trophy, LogOut, UserRound } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { signOut } from "@/lib/actions/auth";
+import { UserMenu } from "@/components/layout/user-menu";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
@@ -41,27 +35,7 @@ export function Navbar({ profile }: { profile: Profile }) {
             </Button>
           ) : null}
         </nav>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <UserRound className="size-4" />
-              {profile?.name ?? "Perfil"}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href="/profile">Mi perfil</Link>
-            </DropdownMenuItem>
-            <form action={signOut}>
-              <DropdownMenuItem asChild>
-                <button className="w-full" type="submit">
-                  <LogOut className="mr-2 size-4" />
-                  Cerrar sesión
-                </button>
-              </DropdownMenuItem>
-            </form>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <UserMenu profile={profile} />
       </div>
     </header>
   );

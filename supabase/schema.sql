@@ -143,16 +143,7 @@ drop policy if exists "profiles_select_own_or_members" on public.profiles;
 create policy "profiles_select_own_or_members"
 on public.profiles for select
 to authenticated
-using (
-  id = auth.uid()
-  or exists (
-    select 1
-    from public.pool_members mine
-    join public.pool_members theirs on theirs.pool_id = mine.pool_id
-    where mine.user_id = auth.uid()
-      and theirs.user_id = profiles.id
-  )
-);
+using (id = auth.uid() or public.is_admin());
 
 drop policy if exists "profiles_insert_own" on public.profiles;
 create policy "profiles_insert_own"
@@ -177,14 +168,7 @@ drop policy if exists "pool_members_read_same_pool" on public.pool_members;
 create policy "pool_members_read_same_pool"
 on public.pool_members for select
 to authenticated
-using (
-  user_id = auth.uid()
-  or exists (
-    select 1 from public.pool_members mine
-    where mine.pool_id = pool_members.pool_id
-      and mine.user_id = auth.uid()
-  )
-);
+using (true);
 
 drop policy if exists "pool_members_join_self" on public.pool_members;
 create policy "pool_members_join_self"
@@ -222,14 +206,7 @@ drop policy if exists "predictions_read_own" on public.predictions;
 create policy "predictions_read_own"
 on public.predictions for select
 to authenticated
-using (
-  user_id = auth.uid()
-  or exists (
-    select 1 from public.pool_members mine
-    where mine.pool_id = predictions.pool_id
-      and mine.user_id = auth.uid()
-  )
-);
+using (user_id = auth.uid() or public.is_admin());
 
 drop policy if exists "predictions_insert_own_before_match" on public.predictions;
 create policy "predictions_insert_own_before_match"

@@ -1,16 +1,118 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { calculatePoints } from "@/lib/scoring";
 import { isPredictionLocked } from "@/lib/utils";
 import { matchResultSchema, predictionSchema } from "@/lib/validations/prediction-schema";
-import { ensurePoolMembership, getCurrentUser, getProfile } from "@/lib/actions/queries";
+import type { Database } from "@/types/database";
+import {
+  getCurrentUser,
+  getProfile,
+} from "@/lib/actions/queries";
+import type { User } from "@supabase/supabase-js";
 
 export type MutationState = {
   ok: boolean;
   message: string;
 };
+
+type TypedSupabase = SupabaseClient<Database, "public">;
+
+function createTokenClient(accessToken: string): TypedSupabase {
+  return createSupabaseClient<Database, "public">(
+    getSupabaseUrl(),
+    getSupabasePublishableKey(),
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    },
+  );
+}
+
+async function getAuthenticatedClient(formData: FormData) {
+  const cookieClient = await createClient();
+  const cookieUser = await getCurrentUser();
+
+  if (cookieUser) {
+    return { supabase: cookieClient, user: cookieUser };
+  }
+
+  const accessToken = String(formData.get("accessToken") ?? "");
+  if (!accessToken) return { supabase: cookieClient, user: null };
+
+  const tokenClient = createTokenClient(accessToken);
+  const {
+    data: { user },
+  } = await tokenClient.auth.getUser(accessToken);
+
+  return { supabase: tokenClient, user };
+}
+
+async function ensureProfileForClient(supabase: TypedSupabase, user: User) {
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (existing) return existing;
+
+  const fallbackName =
+    typeof user.user_metadata?.name === "string" && user.user_metadata.name.length > 0
+      ? user.user_metadata.name
+      : user.email?.split("@")[0] ?? "Participante";
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .insert({
+      id: user.id,
+      name: fallbackName,
+      role: "player",
+    })
+    .select("*")
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
+async function ensurePoolMembershipForClient(supabase: TypedSupabase, user: User) {
+  const profile = await ensureProfileForClient(supabase, user);
+  if (!profile) return null;
+
+  const { data: pool } = await supabase
+    .from("pools")
+    .select("*")
+    .eq("is_active", true)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!pool) return null;
+
+  const { error } = await supabase.from("pool_members").upsert(
+    {
+      pool_id: pool.id,
+      user_id: user.id,
+      display_name: profile.name,
+    },
+    { onConflict: "pool_id,user_id" },
+  );
+
+  if (error) return null;
+  return pool;
+}
 
 export async function savePrediction(
   _state: MutationState,
@@ -26,10 +128,15 @@ export async function savePrediction(
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Pronóstico inválido." };
   }
 
-  const supabase = await createClient();
-  const user = await getCurrentUser();
-  const pool = user ? await ensurePoolMembership() : null;
-  if (!user || !pool) return { ok: false, message: "Inicia sesión para pronosticar." };
+  const { supabase, user } = await getAuthenticatedClient(formData);
+  const pool = user ? await ensurePoolMembershipForClient(supabase, user) : null;
+  if (!user || !pool) {
+    return {
+      ok: false,
+      message:
+        "Inicia sesión para pronosticar. Si ya iniciaste sesión, recarga la página e intenta de nuevo.",
+    };
+  }
 
   const { data: match } = await supabase
     .from("matches")
@@ -63,7 +170,12 @@ export async function savePrediction(
     { onConflict: "pool_id,user_id,match_id" },
   );
 
-  if (error) return { ok: false, message: "No pudimos guardar el pronóstico." };
+  if (error) {
+    return {
+      ok: false,
+      message: `No pudimos guardar el pronóstico: ${error.message}`,
+    };
+  }
 
   revalidatePath("/matches");
   revalidatePath(`/matches/${parsed.data.matchId}`);

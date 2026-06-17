@@ -1,8 +1,7 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { signOut } from "@/lib/actions/auth";
 import { getProfile } from "@/lib/actions/queries";
-import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/logout-button";
 
 export default async function ProfilePage() {
   const profile = await getProfile();
@@ -19,9 +18,7 @@ export default async function ProfilePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">Rol: {profile?.role ?? "player"}</p>
-          <form action={signOut}>
-            <Button type="submit" variant="outline">Cerrar sesión</Button>
-          </form>
+          <LogoutButton />
         </CardContent>
       </Card>
     </AppShell>
