@@ -73,7 +73,6 @@ export function AuthForm() {
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: data.user.id,
       name,
-      role: "player",
     });
 
     setRegisterPending(false);

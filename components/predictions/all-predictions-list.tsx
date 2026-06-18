@@ -70,7 +70,6 @@ export function AllPredictionsList() {
         {
           id: user.id,
           name: fallbackName,
-          role: "player",
         },
         { onConflict: "id" },
       );

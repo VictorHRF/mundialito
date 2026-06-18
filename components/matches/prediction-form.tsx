@@ -108,7 +108,6 @@ export function PredictionForm({
       {
         id: user.id,
         name: fallbackName,
-        role: "player",
       },
       { onConflict: "id" },
     );
