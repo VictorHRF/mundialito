@@ -55,6 +55,18 @@ El schema incluye:
 - Trigger para bloquear pronósticos cuando el partido ya inició
 - Seed mínimo de equipos, pool y partidos futuros
 
+### Fechas y zona horaria
+
+`matches.match_date` es `timestamptz`. Guarda cada horario incluyendo el
+offset de Ciudad de México para evitar desplazamientos:
+
+```sql
+'2026-06-18 13:00:00-06'
+```
+
+La interfaz siempre muestra las fechas en la zona `America/Mexico_City`,
+independientemente de la zona horaria del navegador o del servidor.
+
 ## Desarrollo local
 
 ```bash
