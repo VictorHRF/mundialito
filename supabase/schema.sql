@@ -83,6 +83,20 @@ as $$
   );
 $$;
 
+create or replace function public.is_pool_member(target_pool_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.pool_members
+    where pool_id = target_pool_id
+      and user_id = auth.uid()
+  );
+$$;
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -206,7 +220,11 @@ drop policy if exists "predictions_read_own" on public.predictions;
 create policy "predictions_read_own"
 on public.predictions for select
 to authenticated
-using (user_id = auth.uid() or public.is_admin());
+using (
+  user_id = auth.uid()
+  or public.is_pool_member(pool_id)
+  or public.is_admin()
+);
 
 drop policy if exists "predictions_insert_own_before_match" on public.predictions;
 create policy "predictions_insert_own_before_match"

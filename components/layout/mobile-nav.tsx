@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, CalendarDays, Home, Shield, Trophy, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, Home, Shield, Trophy, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
@@ -11,6 +11,7 @@ export function MobileNav({ profile }: { profile: Profile }) {
     { href: "/matches", label: "Partidos", icon: CalendarDays },
     { href: "/ranking", label: "Ranking", icon: Trophy },
     { href: "/my-predictions", label: "Míos", icon: BarChart3 },
+    { href: "/predictions", label: "Todos", icon: Users },
     profile?.role === "admin"
       ? { href: "/admin", label: "Admin", icon: Shield }
       : { href: "/profile", label: "Perfil", icon: UserRound },
@@ -18,7 +19,7 @@ export function MobileNav({ profile }: { profile: Profile }) {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden">
-      <div className="grid h-16 grid-cols-5">
+      <div className="grid h-16 grid-cols-6">
         {items.map((item) => {
           const Icon = item.icon;
           return (

@@ -9,7 +9,8 @@ type Profile = Database["public"]["Tables"]["profiles"]["Row"] | null;
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/matches", label: "Partidos" },
-  { href: "/my-predictions", label: "Pronósticos" },
+  { href: "/my-predictions", label: "Mis pronósticos" },
+  { href: "/predictions", label: "Todos" },
   { href: "/ranking", label: "Ranking" },
 ];
 

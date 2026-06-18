@@ -7,6 +7,7 @@ const privateRoutes = [
   "/dashboard",
   "/matches",
   "/my-predictions",
+  "/predictions",
   "/ranking",
   "/admin",
   "/profile",
