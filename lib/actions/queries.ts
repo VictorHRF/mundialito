@@ -193,7 +193,13 @@ export async function getRanking(): Promise<RankingRow[]> {
   for (const stat of stats ?? []) {
     const current = statMap.get(stat.user_id) ?? { exact: 0, winner: 0 };
     if (stat.result_type === "exact") current.exact += 1;
-    if (stat.result_type === "winner") current.winner += 1;
+    if (
+      stat.result_type === "winner" ||
+      stat.result_type === "difference" ||
+      stat.result_type === "exact"
+    ) {
+      current.winner += 1;
+    }
     statMap.set(stat.user_id, current);
   }
 

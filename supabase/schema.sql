@@ -242,18 +242,60 @@ with check (
   )
 );
 
-insert into public.teams (name, code, group_name) values
-  ('Mexico', 'MEX', 'A'),
-  ('Sudafrica', 'RSA', 'A'),
+insert into public.teams (name, code, group_name)
+values
+  ('México', 'MEX', 'A'),
+  ('Sudáfrica', 'RSA', 'A'),
   ('Corea del Sur', 'KOR', 'A'),
-  ('Republica Checa', 'CZE', 'A'),
-  ('Canada', 'CAN', 'B'),
-  ('Estados Unidos', 'USA', 'B'),
+  ('República Checa', 'CZE', 'A'),
+  ('Canadá', 'CAN', 'B'),
+  ('Bosnia y Herzegovina', 'BIH', 'B'),
+  ('Catar', 'QAT', 'B'),
+  ('Suiza', 'SUI', 'B'),
   ('Brasil', 'BRA', 'C'),
-  ('Argentina', 'ARG', 'C'),
-  ('Espana', 'ESP', 'D'),
-  ('Francia', 'FRA', 'D')
-on conflict (code) do update set name = excluded.name, group_name = excluded.group_name;
+  ('Marruecos', 'MAR', 'C'),
+  ('Haití', 'HAI', 'C'),
+  ('Escocia', 'SCO', 'C'),
+  ('Estados Unidos', 'USA', 'D'),
+  ('Paraguay', 'PAR', 'D'),
+  ('Australia', 'AUS', 'D'),
+  ('Turquía', 'TUR', 'D'),
+  ('Alemania', 'GER', 'E'),
+  ('Curazao', 'CUW', 'E'),
+  ('Costa de Marfil', 'CIV', 'E'),
+  ('Ecuador', 'ECU', 'E'),
+  ('Países Bajos', 'NED', 'F'),
+  ('Japón', 'JPN', 'F'),
+  ('Túnez', 'TUN', 'F'),
+  ('Suecia', 'SWE', 'F'),
+  ('Bélgica', 'BEL', 'G'),
+  ('Egipto', 'EGY', 'G'),
+  ('Irán', 'IRN', 'G'),
+  ('Nueva Zelanda', 'NZL', 'G'),
+  ('España', 'ESP', 'H'),
+  ('Cabo Verde', 'CPV', 'H'),
+  ('Arabia Saudita', 'KSA', 'H'),
+  ('Uruguay', 'URU', 'H'),
+  ('Francia', 'FRA', 'I'),
+  ('Senegal', 'SEN', 'I'),
+  ('Noruega', 'NOR', 'I'),
+  ('Irak', 'IRQ', 'I'),
+  ('Argentina', 'ARG', 'J'),
+  ('Argelia', 'ALG', 'J'),
+  ('Austria', 'AUT', 'J'),
+  ('Jordania', 'JOR', 'J'),
+  ('Portugal', 'POR', 'K'),
+  ('Uzbekistán', 'UZB', 'K'),
+  ('Colombia', 'COL', 'K'),
+  ('República Democrática del Congo', 'COD', 'K'),
+  ('Inglaterra', 'ENG', 'L'),
+  ('Croacia', 'CRO', 'L'),
+  ('Ghana', 'GHA', 'L'),
+  ('Panamá', 'PAN', 'L')
+on conflict (code)
+do update set
+  name = excluded.name,
+  group_name = excluded.group_name;
 
 insert into public.pools (name, description, invite_code, is_active)
 values ('Mundialito Familiar', 'Quiniela familiar del Mundial 2026', 'FAMILIA2026', true)

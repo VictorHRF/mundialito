@@ -92,14 +92,20 @@ pnpm build
 
 Fase de grupos:
 
-- Marcador exacto: 5 puntos
-- Ganador correcto o empate correcto: 3 puntos
-- Diferencia correcta: 2 puntos
+- Ganador o empate correcto: 2 puntos
+- Diferencia de goles correcta: 1 punto adicional
+- Marcador exacto: 2 puntos adicionales
+- Máximo por partido: 5 puntos
 
 Eliminación directa:
 
-- Marcador exacto: 6 puntos
-- Ganador correcto: 4 puntos
-- Diferencia correcta: 2 puntos
+- Ganador correcto: 3 puntos
+- Diferencia de goles correcta: 1 punto adicional
+- Marcador exacto: 2 puntos adicionales
+- Máximo por partido: 6 puntos
+
+Los puntos son acumulativos. Por ejemplo, en fase de grupos, si el resultado
+real es 3-1 y el pronóstico es 2-0, se obtienen 3 puntos: 2 por acertar al
+ganador y 1 por acertar la diferencia de dos goles.
 
 La lógica vive en `lib/scoring.ts`.

@@ -38,17 +38,20 @@ export function calculatePoints({
     homeScore - awayScore === predictedHomeScore - predictedAwayScore;
   const groupStage = isGroupStage(stage);
 
-  if (exact) {
-    return { points: groupStage ? 5 : 6, resultType: "exact" };
-  }
+  if (!sameOutcome) return { points: 0, resultType: "none" };
 
-  if (sameOutcome) {
-    return { points: groupStage ? 3 : 4, resultType: "winner" };
-  }
+  let points = groupStage ? 2 : 3;
+  let resultType: ResultType = "winner";
 
   if (sameDifference) {
-    return { points: 2, resultType: "difference" };
+    points += 1;
+    resultType = "difference";
   }
 
-  return { points: 0, resultType: "none" };
+  if (exact) {
+    points += 2;
+    resultType = "exact";
+  }
+
+  return { points, resultType };
 }
