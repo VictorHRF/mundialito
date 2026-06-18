@@ -18,7 +18,7 @@ export function UserMenu({ profile }: { profile: Profile }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="border-white/60 bg-transparent text-white hover:bg-white hover:text-cup-navy">
           <UserRound className="size-4" />
           {profile?.name ?? "Perfil"}
         </Button>

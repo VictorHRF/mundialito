@@ -22,7 +22,7 @@ export function RankingTable({ rows }: { rows: RankingRow[] }) {
 
   return (
     <>
-      <div className="hidden overflow-hidden rounded-lg border bg-card md:block">
+      <div className="hidden overflow-hidden rounded-lg border border-cup-blue/20 bg-card shadow-[0_6px_18px_rgb(7_31_61_/_0.08)] md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -35,8 +35,8 @@ export function RankingTable({ rows }: { rows: RankingRow[] }) {
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={row.user_id}>
-                <TableCell className="font-semibold">#{row.position}</TableCell>
+              <TableRow key={row.user_id} className={row.position === 1 ? "bg-cup-yellow/15" : undefined}>
+                <TableCell className="font-bold text-cup-blue">#{row.position}</TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell className="font-bold">{row.total_points}</TableCell>
                 <TableCell>{row.exact_count}</TableCell>
@@ -48,10 +48,14 @@ export function RankingTable({ rows }: { rows: RankingRow[] }) {
       </div>
       <div className="grid gap-3 md:hidden">
         {rows.map((row) => (
-          <Card key={row.user_id}>
+          <Card key={row.user_id} className={row.position === 1 ? "border-l-4 border-l-cup-yellow" : "border-l-4 border-l-cup-blue"}>
             <CardContent className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center rounded-md bg-accent text-accent-foreground">
+                <span className={`flex size-10 items-center justify-center rounded-md ${
+                  row.position === 1
+                    ? "bg-cup-yellow text-cup-navy"
+                    : "bg-cup-blue text-white"
+                }`}>
                   <Medal className="size-5" />
                 </span>
                 <div>

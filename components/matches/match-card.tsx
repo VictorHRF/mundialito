@@ -18,7 +18,17 @@ export function MatchCard({ match }: { match: MatchWithTeams }) {
   const locked = isPredictionLocked(match.match_date);
 
   return (
-    <Card className="overflow-hidden">
+    <Card
+      className={`overflow-hidden border-l-4 ${
+        match.status === "finished"
+          ? "border-l-cup-yellow"
+          : match.status === "live"
+            ? "border-l-cup-red"
+            : match.user_prediction
+              ? "border-l-cup-cyan"
+              : "border-l-cup-blue"
+      }`}
+    >
       <CardContent className="p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
@@ -35,7 +45,7 @@ export function MatchCard({ match }: { match: MatchWithTeams }) {
             </div>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
               <p className="truncate text-base font-semibold">{home}</p>
-              <span className="rounded-md bg-secondary px-2 py-1 text-xs font-bold">vs</span>
+              <span className="rounded-md bg-cup-navy px-2 py-1 text-xs font-bold text-white">vs</span>
               <p className="truncate text-right text-base font-semibold">{away}</p>
             </div>
             {match.status === "finished" && match.home_score !== null && match.away_score !== null ? (

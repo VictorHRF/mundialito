@@ -16,22 +16,22 @@ const navItems = [
 
 export function Navbar({ profile }: { profile: Profile }) {
   return (
-    <header className="sticky top-0 z-40 hidden border-b bg-background/95 backdrop-blur md:block">
+    <header className="sticky top-0 z-40 hidden border-b border-white/15 bg-cup-navy text-white shadow-md md:block">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <span className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <span className="flex size-9 items-center justify-center rounded-md bg-cup-lime text-cup-navy">
             <Trophy className="size-5" />
           </span>
           Mundialito
         </Link>
         <nav className="flex items-center gap-1">
           {navItems.map((item) => (
-            <Button key={item.href} asChild variant="ghost">
+            <Button key={item.href} asChild variant="ghost" className="text-white hover:bg-white/12">
               <Link href={item.href}>{item.label}</Link>
             </Button>
           ))}
           {profile?.role === "admin" ? (
-            <Button asChild variant="ghost">
+            <Button asChild variant="ghost" className="text-cup-yellow hover:bg-white/12">
               <Link href="/admin">Admin</Link>
             </Button>
           ) : null}

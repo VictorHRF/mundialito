@@ -16,41 +16,41 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="mb-6">
-        <p className="text-sm font-semibold text-primary">Dashboard</p>
+        <p className="text-sm font-bold text-cup-blue">Dashboard</p>
         <DashboardGreeting fallbackName={profile?.name} />
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card>
+        <Card className="border-t-4 border-t-cup-yellow">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Trophy className="size-4" />
+              <Trophy className="size-4 text-cup-yellow" />
               Puntos
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{me?.total_points ?? 0}</p>
+            <p className="text-3xl font-bold text-cup-navy">{me?.total_points ?? 0}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-t-4 border-t-cup-magenta">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-              <ListChecks className="size-4" />
+              <ListChecks className="size-4 text-cup-magenta" />
               Posición
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{me ? `#${me.position}` : "-"}</p>
+            <p className="text-3xl font-bold text-cup-navy">{me ? `#${me.position}` : "-"}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-t-4 border-t-cup-cyan">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CalendarDays className="size-4" />
+              <CalendarDays className="size-4 text-cup-cyan" />
               Pendientes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{pending.length}</p>
+            <p className="text-3xl font-bold text-cup-navy">{pending.length}</p>
           </CardContent>
         </Card>
       </div>

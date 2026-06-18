@@ -87,9 +87,14 @@ export function AuthForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="relative w-full max-w-md overflow-hidden border-0 shadow-2xl">
+      <div className="cup-color-bar" aria-hidden="true">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <span key={index} />
+        ))}
+      </div>
       <CardHeader>
-        <CardTitle>Entra al Mundialito</CardTitle>
+        <CardTitle className="text-cup-navy">Entra al Mundialito</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="login" className="w-full">

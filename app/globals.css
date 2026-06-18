@@ -4,26 +4,34 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.985 0.01 95);
-  --foreground: oklch(0.19 0.02 150);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.19 0.02 150);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.19 0.02 150);
-  --primary: oklch(0.43 0.13 154);
-  --primary-foreground: oklch(0.985 0.01 95);
-  --secondary: oklch(0.95 0.02 140);
-  --secondary-foreground: oklch(0.22 0.04 150);
-  --muted: oklch(0.94 0.01 95);
-  --muted-foreground: oklch(0.47 0.02 120);
-  --accent: oklch(0.78 0.14 83);
-  --accent-foreground: oklch(0.2 0.03 90);
-  --destructive: oklch(0.56 0.19 26);
-  --destructive-foreground: oklch(0.98 0.01 95);
-  --border: oklch(0.88 0.01 100);
-  --input: oklch(0.88 0.01 100);
-  --ring: oklch(0.55 0.12 154);
+  --background: #f2f8fb;
+  --foreground: #0a2038;
+  --card: #ffffff;
+  --card-foreground: #0a2038;
+  --popover: #ffffff;
+  --popover-foreground: #0a2038;
+  --primary: #c8f000;
+  --primary-foreground: #102414;
+  --secondary: #dff7f3;
+  --secondary-foreground: #075b57;
+  --muted: #e8f0f5;
+  --muted-foreground: #526879;
+  --accent: #ffc72c;
+  --accent-foreground: #352900;
+  --destructive: #e51b4b;
+  --destructive-foreground: #ffffff;
+  --border: #cbdbe5;
+  --input: #b9ceda;
+  --ring: #0067c7;
   --radius: 0.5rem;
+  --cup-navy: #071f3d;
+  --cup-blue: #0067c7;
+  --cup-cyan: #00b7a8;
+  --cup-green: #159947;
+  --cup-lime: #c8f000;
+  --cup-yellow: #ffc72c;
+  --cup-red: #ef3340;
+  --cup-magenta: #d51f6b;
 }
 
 @theme inline {
@@ -46,6 +54,14 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-cup-navy: var(--cup-navy);
+  --color-cup-blue: var(--cup-blue);
+  --color-cup-cyan: var(--cup-cyan);
+  --color-cup-green: var(--cup-green);
+  --color-cup-lime: var(--cup-lime);
+  --color-cup-yellow: var(--cup-yellow);
+  --color-cup-red: var(--cup-red);
+  --color-cup-magenta: var(--cup-magenta);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -58,6 +74,44 @@
 
 body {
   @apply bg-background text-foreground antialiased;
+}
+
+.cup-color-bar {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr 1.1fr 0.9fr 1.2fr;
+  height: 0.4rem;
+}
+
+.cup-color-bar > span:nth-child(1) {
+  background: var(--cup-green);
+}
+
+.cup-color-bar > span:nth-child(2) {
+  background: var(--cup-lime);
+}
+
+.cup-color-bar > span:nth-child(3) {
+  background: var(--cup-yellow);
+}
+
+.cup-color-bar > span:nth-child(4) {
+  background: var(--cup-red);
+}
+
+.cup-color-bar > span:nth-child(5) {
+  background: var(--cup-magenta);
+}
+
+.cup-color-bar > span:nth-child(6) {
+  background: var(--cup-blue);
+}
+
+.cup-page-pattern {
+  background-color: var(--background);
+  background-image:
+    linear-gradient(90deg, rgb(0 103 199 / 0.045) 1px, transparent 1px),
+    linear-gradient(rgb(0 183 168 / 0.045) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 button,

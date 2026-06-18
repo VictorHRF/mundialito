@@ -18,7 +18,7 @@ export function MobileNav({ profile }: { profile: Profile }) {
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-cup-navy text-white shadow-[0_-6px_20px_rgb(7_31_61_/_0.22)] md:hidden">
       <div className="grid h-16 grid-cols-6">
         {items.map((item) => {
           const Icon = item.icon;
@@ -27,8 +27,8 @@ export function MobileNav({ profile }: { profile: Profile }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground",
-                "active:bg-secondary",
+                "flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-white/75",
+                "active:bg-cup-blue active:text-white",
               )}
             >
               <Icon className="size-5" />
