@@ -12,11 +12,19 @@ import type { Prediction } from "@/types/prediction";
 
 type PredictionFormProps = {
   matchId: string;
+  homeTeamName: string;
+  awayTeamName: string;
   locked: boolean;
   prediction: Prediction | null;
 };
 
-export function PredictionForm({ matchId, locked, prediction }: PredictionFormProps) {
+export function PredictionForm({
+  matchId,
+  homeTeamName,
+  awayTeamName,
+  locked,
+  prediction,
+}: PredictionFormProps) {
   const router = useRouter();
   const [accessToken, setAccessToken] = useState("");
   const [pending, setPending] = useState(false);
@@ -189,7 +197,10 @@ export function PredictionForm({ matchId, locked, prediction }: PredictionFormPr
       <input type="hidden" name="matchId" value={matchId} />
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="predictedHomeScore">Local</Label>
+          <Label htmlFor="predictedHomeScore" className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Local</span>
+            <span>{homeTeamName}</span>
+          </Label>
           <Input
             id="predictedHomeScore"
             name="predictedHomeScore"
@@ -200,7 +211,10 @@ export function PredictionForm({ matchId, locked, prediction }: PredictionFormPr
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="predictedAwayScore">Visitante</Label>
+          <Label htmlFor="predictedAwayScore" className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Visitante</span>
+            <span>{awayTeamName}</span>
+          </Label>
           <Input
             id="predictedAwayScore"
             name="predictedAwayScore"

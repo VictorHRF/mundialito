@@ -75,7 +75,13 @@ export default async function MatchDetailPage({ params }: PageProps) {
                 Guardado: {prediction.predicted_home_score} - {prediction.predicted_away_score}
               </p>
             ) : null}
-            <PredictionForm matchId={match.id} locked={locked} prediction={prediction} />
+            <PredictionForm
+              matchId={match.id}
+              homeTeamName={home}
+              awayTeamName={away}
+              locked={locked}
+              prediction={prediction}
+            />
           </CardContent>
         </Card>
       </div>
