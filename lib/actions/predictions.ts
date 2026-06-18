@@ -214,25 +214,50 @@ export async function updateMatchResult(
 
   if (error) return { ok: false, message: "No pudimos actualizar el resultado." };
 
-  await recalculateMatchPoints(parsed.data.matchId);
-  revalidatePath("/", "layout");
+  const recalculation = await recalculateMatchPoints(parsed.data.matchId);
+  if (!recalculation.ok) {
+    return {
+      ok: false,
+      message: `Resultado guardado, pero falló el recálculo: ${recalculation.message}`,
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/ranking");
+  revalidatePath("/my-predictions");
+  revalidatePath("/predictions");
+  revalidatePath("/dashboard");
+  revalidatePath("/matches");
   return { ok: true, message: "Resultado guardado y puntos recalculados." };
 }
 
-export async function recalculateMatchPoints(matchId: string) {
+export async function recalculateMatchPoints(matchId: string): Promise<MutationState> {
   const supabase = await createClient();
-  const { data: match } = await supabase
+  const { data: match, error: matchError } = await supabase
     .from("matches")
     .select("id, stage, home_score, away_score")
     .eq("id", matchId)
     .single();
 
-  if (!match || match.home_score === null || match.away_score === null) return;
+  if (matchError || !match) {
+    return {
+      ok: false,
+      message: matchError?.message ?? "No encontramos el partido.",
+    };
+  }
 
-  const { data: predictions } = await supabase
+  if (match.home_score === null || match.away_score === null) {
+    return { ok: false, message: "El partido todavía no tiene resultado completo." };
+  }
+
+  const { data: predictions, error: predictionsError } = await supabase
     .from("predictions")
     .select("*")
     .eq("match_id", matchId);
+
+  if (predictionsError) {
+    return { ok: false, message: predictionsError.message };
+  }
 
   for (const prediction of predictions ?? []) {
     const result = calculatePoints({
@@ -243,41 +268,72 @@ export async function recalculateMatchPoints(matchId: string) {
       stage: match.stage,
     });
 
-    await supabase
+    const { error: updatePredictionError } = await supabase
       .from("predictions")
       .update({
         points_awarded: result.points,
         result_type: result.resultType,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", prediction.id);
+      .eq("id", prediction.id)
+      .select("id")
+      .single();
+
+    if (updatePredictionError) {
+      return {
+        ok: false,
+        message: `No se pudo actualizar un pronóstico: ${updatePredictionError.message}`,
+      };
+    }
   }
 
   const poolIds = Array.from(new Set((predictions ?? []).map((prediction) => prediction.pool_id)));
 
   for (const poolId of poolIds) {
-    const { data: members } = await supabase
+    const { data: members, error: membersError } = await supabase
       .from("pool_members")
       .select("user_id")
       .eq("pool_id", poolId);
 
+    if (membersError) {
+      return { ok: false, message: membersError.message };
+    }
+
     for (const member of members ?? []) {
-      const { data: userPredictions } = await supabase
+      const { data: userPredictions, error: totalsError } = await supabase
         .from("predictions")
         .select("points_awarded")
         .eq("pool_id", poolId)
         .eq("user_id", member.user_id);
+
+      if (totalsError) {
+        return { ok: false, message: totalsError.message };
+      }
 
       const total = (userPredictions ?? []).reduce(
         (sum, prediction) => sum + prediction.points_awarded,
         0,
       );
 
-      await supabase
+      const { error: memberUpdateError } = await supabase
         .from("pool_members")
         .update({ total_points: total })
         .eq("pool_id", poolId)
-        .eq("user_id", member.user_id);
+        .eq("user_id", member.user_id)
+        .select("id")
+        .single();
+
+      if (memberUpdateError) {
+        return {
+          ok: false,
+          message: `No se pudo actualizar el ranking: ${memberUpdateError.message}`,
+        };
+      }
     }
   }
+
+  return {
+    ok: true,
+    message: `${predictions?.length ?? 0} pronósticos recalculados.`,
+  };
 }
