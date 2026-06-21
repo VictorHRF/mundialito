@@ -2,9 +2,18 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Lock } from "lucide-react";
+import { Coins, Loader2, Lock } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
@@ -233,6 +242,28 @@ export function PredictionForm({
         {pending ? <Loader2 className="animate-spin" /> : null}
         {accessToken ? "Guardar pronóstico" : "Preparando sesión..."}
       </Button>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button type="button" variant="outline" className="w-full">
+            <Coins className="size-4" />
+            Pagar para obtener puntos dobles
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¡Es broma!</DialogTitle>
+            <DialogDescription>
+              No se pueden comprar puntos guiño guiño. Aquí solo cuentan tus buenos
+              pronósticos.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogClose asChild>
+            <Button type="button" className="w-full">
+              Entendido
+            </Button>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }
