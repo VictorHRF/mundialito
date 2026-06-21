@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Users } from "lucide-react";
+import { EyeOff, Loader2, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +30,7 @@ const resultLabels = {
 
 export function AllPredictionsList() {
   const [items, setItems] = useState<MatchPredictions[]>([]);
+  const [hideFinished, setHideFinished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -202,9 +203,36 @@ export function AllPredictionsList() {
     );
   }
 
+  const finishedCount = items.filter(({ match }) => match.status === "finished").length;
+  const visibleItems = hideFinished
+    ? items.filter(({ match }) => match.status !== "finished")
+    : items;
+
   return (
-    <div className="grid gap-4">
-      {items.map(({ match, homeTeam, awayTeam, predictions }) => {
+    <div className="space-y-4">
+      <label className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-cup-blue/20 bg-card p-4 shadow-sm">
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-cup-blue text-white">
+            <EyeOff className="size-4" />
+          </span>
+          <span>
+            <span className="block font-semibold">Ocultar partidos jugados</span>
+            <span className="block text-sm text-muted-foreground">
+              {finishedCount} {finishedCount === 1 ? "partido finalizado" : "partidos finalizados"}
+            </span>
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          checked={hideFinished}
+          onChange={(event) => setHideFinished(event.target.checked)}
+          className="size-5 shrink-0 accent-cup-blue"
+        />
+      </label>
+
+      {visibleItems.length ? (
+        <div className="grid gap-4">
+          {visibleItems.map(({ match, homeTeam, awayTeam, predictions }) => {
         const home = homeTeam?.name ?? match.home_placeholder ?? "Local";
         const away = awayTeam?.name ?? match.away_placeholder ?? "Visitante";
 
@@ -268,7 +296,14 @@ export function AllPredictionsList() {
             </CardContent>
           </Card>
         );
-      })}
+          })}
+        </div>
+      ) : (
+        <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+          No hay partidos pendientes con pronósticos. Desactiva el filtro para consultar los
+          partidos finalizados.
+        </div>
+      )}
     </div>
   );
 }
