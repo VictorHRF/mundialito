@@ -10,7 +10,7 @@ import { ensureProfile, getMatches, getRanking } from "@/lib/actions/queries";
 export default async function DashboardPage() {
   const [profile, matches, ranking] = await Promise.all([ensureProfile(), getMatches(), getRanking()]);
   const me = ranking.find((row) => row.user_id === profile?.id);
-  const upcoming = matches.filter((match) => match.status !== "finished").slice(0, 3);
+  const upcoming = matches.filter((match) => match.status !== "finished").slice(0, 4);
   const pending = matches.filter((match) => !match.user_prediction && match.status !== "finished");
 
   return (

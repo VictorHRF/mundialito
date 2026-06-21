@@ -48,10 +48,20 @@ export function MatchCard({ match }: { match: MatchWithTeams }) {
               <span className="rounded-md bg-cup-navy px-2 py-1 text-xs font-bold text-white">vs</span>
               <p className="truncate text-right text-base font-semibold">{away}</p>
             </div>
+            {match.user_prediction ? (
+              <div className="mt-3 flex items-center justify-center gap-3 rounded-md border border-cup-cyan/30 bg-cup-cyan/10 px-3 py-2">
+                <span className="text-xs font-semibold text-muted-foreground">Tu pronóstico</span>
+                <span className="text-lg font-bold text-cup-navy">
+                  {match.user_prediction.predicted_home_score} -{" "}
+                  {match.user_prediction.predicted_away_score}
+                </span>
+              </div>
+            ) : null}
             {match.status === "finished" && match.home_score !== null && match.away_score !== null ? (
-              <p className="mt-2 text-center text-lg font-bold">
-                {match.home_score} - {match.away_score}
-              </p>
+              <div className="mt-2 text-center">
+                <span className="text-xs font-semibold text-muted-foreground">Resultado final</span>
+                <p className="text-lg font-bold">{match.home_score} - {match.away_score}</p>
+              </div>
             ) : null}
             <div className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-4">
               <span className="flex items-center gap-2">
