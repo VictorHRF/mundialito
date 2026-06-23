@@ -161,6 +161,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      daily_wildcards: {
+        Row: {
+          id: string;
+          pool_id: string;
+          user_id: string;
+          match_id: string;
+          match_day: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          pool_id: string;
+          user_id: string;
+          match_id: string;
+          match_day: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          match_id?: string;
+          match_day?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

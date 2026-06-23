@@ -2,25 +2,19 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Coins, Loader2, Lock } from "lucide-react";
+import { Loader2, Lock, Sparkles } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { getMatchDayInMexicoCity, isGroupStage } from "@/lib/utils";
 import type { Prediction } from "@/types/prediction";
 
 type PredictionFormProps = {
   matchId: string;
+  matchDate: string;
+  stage: string;
   homeTeamName: string;
   awayTeamName: string;
   locked: boolean;
@@ -29,6 +23,8 @@ type PredictionFormProps = {
 
 export function PredictionForm({
   matchId,
+  matchDate,
+  stage,
   homeTeamName,
   awayTeamName,
   locked,
@@ -39,12 +35,48 @@ export function PredictionForm({
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
   const [ok, setOk] = useState(false);
+  const [wildcardSelected, setWildcardSelected] = useState(false);
+  const [wildcardMatchId, setWildcardMatchId] = useState<string | null>(null);
+  const [wildcardLoading, setWildcardLoading] = useState(isGroupStage(stage));
+  const groupStage = isGroupStage(stage);
 
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setAccessToken(data.session?.access_token ?? "");
+
+      const user = data.session?.user;
+      if (!user || !groupStage) {
+        setWildcardLoading(false);
+        return;
+      }
+
+      const { data: pool } = await supabase
+        .from("pools")
+        .select("id")
+        .eq("is_active", true)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (!pool) {
+        setWildcardLoading(false);
+        return;
+      }
+
+      const { data: wildcard } = await supabase
+        .from("daily_wildcards")
+        .select("match_id")
+        .eq("pool_id", pool.id)
+        .eq("user_id", user.id)
+        .eq("match_day", getMatchDayInMexicoCity(matchDate))
+        .maybeSingle();
+
+      const selectedMatchId = wildcard?.match_id ?? null;
+      setWildcardMatchId(selectedMatchId);
+      setWildcardSelected(selectedMatchId === matchId);
+      setWildcardLoading(false);
     });
 
     const {
@@ -54,7 +86,7 @@ export function PredictionForm({
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [groupStage, matchDate, matchId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -183,8 +215,56 @@ export function PredictionForm({
       return;
     }
 
+    if (groupStage) {
+      const matchDay = getMatchDayInMexicoCity(match.match_date);
+
+      if (wildcardSelected) {
+        const { error: wildcardError } = await supabase.from("daily_wildcards").upsert(
+          {
+            pool_id: pool.id,
+            user_id: user.id,
+            match_id: matchId,
+            match_day: matchDay,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "pool_id,user_id,match_day" },
+        );
+
+        if (wildcardError) {
+          setPending(false);
+          setMessage(
+            `Pronóstico guardado, pero no pudimos aplicar el comodín: ${wildcardError.message}`,
+          );
+          return;
+        }
+
+        setWildcardMatchId(matchId);
+      } else if (wildcardMatchId === matchId) {
+        const { error: wildcardDeleteError } = await supabase
+          .from("daily_wildcards")
+          .delete()
+          .eq("pool_id", pool.id)
+          .eq("user_id", user.id)
+          .eq("match_id", matchId);
+
+        if (wildcardDeleteError) {
+          setPending(false);
+          setMessage(
+            `Pronóstico guardado, pero no pudimos quitar el comodín: ${wildcardDeleteError.message}`,
+          );
+          return;
+        }
+
+        setWildcardMatchId(null);
+      }
+    }
+
     setOk(true);
-    setMessage("Pronóstico guardado.");
+    setMessage(
+      wildcardSelected && groupStage
+        ? "Pronóstico guardado con comodín de puntos dobles."
+        : "Pronóstico guardado.",
+    );
     router.refresh();
   }
 
@@ -233,6 +313,32 @@ export function PredictionForm({
           />
         </div>
       </div>
+      {groupStage ? (
+        <label className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-cup-yellow bg-cup-yellow/15 p-4">
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-cup-yellow text-cup-navy">
+              <Sparkles className="size-5" />
+            </span>
+            <span>
+              <span className="block font-bold text-cup-navy">
+                Usar comodín diario · puntos x2
+              </span>
+              <span className="block text-sm text-muted-foreground">
+                {wildcardMatchId && wildcardMatchId !== matchId
+                  ? "Ya elegiste otro partido este día. Al guardar, el comodín se moverá aquí."
+                  : "Puedes elegir un solo partido de fase de grupos por cada día CDMX."}
+              </span>
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={wildcardSelected}
+            disabled={wildcardLoading}
+            onChange={(event) => setWildcardSelected(event.target.checked)}
+            className="size-5 shrink-0 accent-cup-blue"
+          />
+        </label>
+      ) : null}
       {message ? (
         <Alert variant={ok ? "default" : "destructive"}>
           <AlertDescription>{message}</AlertDescription>
@@ -242,28 +348,6 @@ export function PredictionForm({
         {pending ? <Loader2 className="animate-spin" /> : null}
         {accessToken ? "Guardar pronóstico" : "Preparando sesión..."}
       </Button>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button type="button" variant="outline" className="w-full">
-            <Coins className="size-4" />
-            Pagar para obtener puntos dobles
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>¡Es broma!</DialogTitle>
-            <DialogDescription>
-              No se pueden comprar puntos guiño guiño. Aquí solo cuentan tus buenos
-              pronósticos.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogClose asChild>
-            <Button type="button" className="w-full">
-              Entendido
-            </Button>
-          </DialogClose>
-        </DialogContent>
-      </Dialog>
     </form>
   );
 }

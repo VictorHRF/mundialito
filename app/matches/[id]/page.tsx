@@ -77,6 +77,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
             ) : null}
             <PredictionForm
               matchId={match.id}
+              matchDate={match.match_date}
+              stage={match.stage}
               homeTeamName={home}
               awayTeamName={away}
               locked={locked}

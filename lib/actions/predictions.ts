@@ -259,6 +259,19 @@ export async function recalculateMatchPoints(matchId: string): Promise<MutationS
     return { ok: false, message: predictionsError.message };
   }
 
+  const { data: wildcards, error: wildcardsError } = await supabase
+    .from("daily_wildcards")
+    .select("pool_id, user_id")
+    .eq("match_id", matchId);
+
+  if (wildcardsError) {
+    return { ok: false, message: wildcardsError.message };
+  }
+
+  const wildcardUsers = new Set(
+    (wildcards ?? []).map((wildcard) => `${wildcard.pool_id}:${wildcard.user_id}`),
+  );
+
   for (const prediction of predictions ?? []) {
     const result = calculatePoints({
       homeScore: match.home_score,
@@ -267,11 +280,13 @@ export async function recalculateMatchPoints(matchId: string): Promise<MutationS
       predictedAwayScore: prediction.predicted_away_score,
       stage: match.stage,
     });
+    const hasWildcard = wildcardUsers.has(`${prediction.pool_id}:${prediction.user_id}`);
+    const awardedPoints = hasWildcard ? result.points * 2 : result.points;
 
     const { error: updatePredictionError } = await supabase
       .from("predictions")
       .update({
-        points_awarded: result.points,
+        points_awarded: awardedPoints,
         result_type: result.resultType,
         updated_at: new Date().toISOString(),
       })

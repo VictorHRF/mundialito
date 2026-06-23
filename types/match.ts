@@ -10,5 +10,6 @@ export type MatchWithTeams = Match & {
     predicted_home_score: number;
     predicted_away_score: number;
     points_awarded: number;
+    is_wildcard?: boolean;
   } | null;
 };

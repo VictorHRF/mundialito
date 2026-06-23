@@ -120,4 +120,19 @@ Los puntos son acumulativos. Por ejemplo, en fase de grupos, si el resultado
 real es 3-1 y el pronóstico es 2-0, se obtienen 3 puntos: 2 por acertar al
 ganador y 1 por acertar la diferencia de dos goles.
 
+### Comodín diario
+
+Durante la fase de grupos, cada participante puede elegir un pronóstico por
+día CDMX como comodín. Los puntos obtenidos en ese partido se multiplican por
+dos:
+
+- 0 puntos se mantienen en 0
+- 2 puntos se convierten en 4
+- 3 puntos se convierten en 6
+- 5 puntos se convierten en 10
+
+Solo puede existir un comodín por usuario, quiniela y fecha. Puede moverse a
+otro partido del mismo día mientras el partido actualmente seleccionado no
+haya iniciado. Después queda bloqueado.
+
 La lógica vive en `lib/scoring.ts`.

@@ -42,6 +42,9 @@ export function MatchCard({ match }: { match: MatchWithTeams }) {
               ) : (
                 <Badge variant="outline">Pendiente</Badge>
               )}
+              {match.user_prediction?.is_wildcard ? (
+                <Badge variant="gold">Comodín x2</Badge>
+              ) : null}
             </div>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
               <p className="truncate text-base font-semibold">{home}</p>

@@ -42,6 +42,9 @@ export default async function MyPredictionsPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      {prediction.is_wildcard ? (
+                        <Badge variant="gold">Comodín x2</Badge>
+                      ) : null}
                       <Badge variant={status === "exacto" ? "gold" : "secondary"}>{status}</Badge>
                       <Badge>{prediction.points_awarded} pts</Badge>
                     </div>

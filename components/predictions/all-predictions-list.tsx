@@ -18,7 +18,7 @@ type MatchPredictions = {
   match: Match;
   homeTeam: Team | null;
   awayTeam: Team | null;
-  predictions: Array<Prediction & { participantName: string }>;
+  predictions: Array<Prediction & { participantName: string; isWildcard: boolean }>;
 };
 
 const resultLabels = {
@@ -99,6 +99,7 @@ export function AllPredictionsList() {
       const [
         { data: predictions, error: predictionsError },
         { data: members, error: membersError },
+        { data: wildcards, error: wildcardsError },
       ] = await Promise.all([
         supabase
           .from("predictions")
@@ -106,12 +107,16 @@ export function AllPredictionsList() {
           .eq("pool_id", pool.id)
           .order("created_at", { ascending: true }),
         supabase.from("pool_members").select("*").eq("pool_id", pool.id),
+        supabase
+          .from("daily_wildcards")
+          .select("user_id, match_id")
+          .eq("pool_id", pool.id),
       ]);
 
-      if (predictionsError || membersError) {
+      if (predictionsError || membersError || wildcardsError) {
         setError(
           `No pudimos cargar los pronósticos: ${
-            predictionsError?.message ?? membersError?.message
+            predictionsError?.message ?? membersError?.message ?? wildcardsError?.message
           }`,
         );
         setLoading(false);
@@ -158,6 +163,9 @@ export function AllPredictionsList() {
         ((members ?? []) as Member[]).map((member) => [member.user_id, member.display_name]),
       );
       const teamMap = new Map(((teams ?? []) as Team[]).map((team) => [team.id, team]));
+      const wildcardKeys = new Set(
+        (wildcards ?? []).map((wildcard) => `${wildcard.user_id}:${wildcard.match_id}`),
+      );
 
       setItems(
         (matches as Match[]).map((match) => ({
@@ -169,6 +177,7 @@ export function AllPredictionsList() {
             .map((prediction) => ({
               ...prediction,
               participantName: memberMap.get(prediction.user_id) ?? "Participante",
+              isWildcard: wildcardKeys.has(`${prediction.user_id}:${prediction.match_id}`),
             })),
         })),
       );
@@ -279,6 +288,11 @@ export function AllPredictionsList() {
                           {prediction.predicted_home_score} - {prediction.predicted_away_score}
                         </span>
                       </p>
+                      {prediction.isWildcard ? (
+                        <Badge variant="gold" className="mt-2">
+                          Comodín x2
+                        </Badge>
+                      ) : null}
                     </div>
                     {match.status === "finished" ? (
                       <div className="ml-3 flex shrink-0 flex-col items-end gap-1">

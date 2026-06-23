@@ -112,11 +112,23 @@ export async function getMatches(): Promise<MatchWithTeams[]> {
     .eq("user_id", user.id)
     .eq("pool_id", pool.id);
 
+  const { data: wildcards } = await supabase
+    .from("daily_wildcards")
+    .select("match_id")
+    .eq("user_id", user.id)
+    .eq("pool_id", pool.id);
+
   const byMatch = new Map((predictions ?? []).map((prediction) => [prediction.match_id, prediction]));
+  const wildcardMatches = new Set((wildcards ?? []).map((wildcard) => wildcard.match_id));
 
   return (data as unknown as MatchWithTeams[]).map((match) => ({
     ...match,
-    user_prediction: byMatch.get(match.id) ?? null,
+    user_prediction: byMatch.has(match.id)
+      ? {
+          ...byMatch.get(match.id)!,
+          is_wildcard: wildcardMatches.has(match.id),
+        }
+      : null,
   }));
 }
 
@@ -163,7 +175,18 @@ export async function getUserPredictions(): Promise<PredictionWithMatch[]> {
     .order("updated_at", { ascending: false });
 
   if (error || !data) return [];
-  return data as unknown as PredictionWithMatch[];
+
+  const { data: wildcards } = await supabase
+    .from("daily_wildcards")
+    .select("match_id")
+    .eq("user_id", user.id)
+    .eq("pool_id", pool.id);
+  const wildcardMatches = new Set((wildcards ?? []).map((wildcard) => wildcard.match_id));
+
+  return (data as unknown as PredictionWithMatch[]).map((prediction) => ({
+    ...prediction,
+    is_wildcard: wildcardMatches.has(prediction.match_id),
+  }));
 }
 
 export async function getRanking(): Promise<RankingRow[]> {
