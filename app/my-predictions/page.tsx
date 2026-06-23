@@ -1,7 +1,11 @@
+import Link from "next/link";
+import { PencilLine } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getUserPredictions } from "@/lib/actions/queries";
+import { isPredictionLocked } from "@/lib/utils";
 
 const resultLabels = {
   exact: "exacto",
@@ -27,6 +31,7 @@ export default async function MyPredictionsPage() {
             const away = match.away_team?.name ?? match.away_placeholder ?? "Visitante";
             const resultType = prediction.result_type ?? "none";
             const status = match.status === "finished" ? resultLabels[resultType] : "pendiente";
+            const locked = isPredictionLocked(match.match_date);
 
             return (
               <Card key={prediction.id}>
@@ -47,6 +52,14 @@ export default async function MyPredictionsPage() {
                       ) : null}
                       <Badge variant={status === "exacto" ? "gold" : "secondary"}>{status}</Badge>
                       <Badge>{prediction.points_awarded} pts</Badge>
+                      {!locked ? (
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/matches/${match.id}`}>
+                            <PencilLine className="size-4" />
+                            Editar
+                          </Link>
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 </CardContent>
