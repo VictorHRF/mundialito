@@ -207,15 +207,44 @@ export async function getRanking(): Promise<RankingRow[]> {
 
   const { data: stats } = await supabase
     .from("predictions")
-    .select("user_id, result_type")
+    .select(
+      "user_id, match_id, result_type, predicted_home_score, predicted_away_score, points_awarded",
+    )
+    .eq("pool_id", pool.id);
+
+  const { data: wildcards } = await supabase
+    .from("daily_wildcards")
+    .select("user_id, match_id")
     .eq("pool_id", pool.id);
 
   const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
-  const statMap = new Map<string, { exact: number; winner: number }>();
+  const wildcardKeys = new Set(
+    (wildcards ?? []).map((wildcard) => `${wildcard.user_id}:${wildcard.match_id}`),
+  );
+  const statMap = new Map<
+    string,
+    {
+      exact: number;
+      winner: number;
+      difference: number;
+      misses: number;
+      draws: number;
+      wildcardPoints: number;
+    }
+  >();
 
   for (const stat of stats ?? []) {
-    const current = statMap.get(stat.user_id) ?? { exact: 0, winner: 0 };
+    const current = statMap.get(stat.user_id) ?? {
+      exact: 0,
+      winner: 0,
+      difference: 0,
+      misses: 0,
+      draws: 0,
+      wildcardPoints: 0,
+    };
     if (stat.result_type === "exact") current.exact += 1;
+    if (stat.result_type === "difference") current.difference += 1;
+    if (stat.result_type === "none") current.misses += 1;
     if (
       stat.result_type === "winner" ||
       stat.result_type === "difference" ||
@@ -223,12 +252,23 @@ export async function getRanking(): Promise<RankingRow[]> {
     ) {
       current.winner += 1;
     }
+    if (stat.predicted_home_score === stat.predicted_away_score) current.draws += 1;
+    if (wildcardKeys.has(`${stat.user_id}:${stat.match_id}`)) {
+      current.wildcardPoints += Math.floor(stat.points_awarded / 2);
+    }
     statMap.set(stat.user_id, current);
   }
 
   return (members ?? []).map((member, index) => {
     const profile = profileMap.get(member.user_id);
-    const counts = statMap.get(member.user_id) ?? { exact: 0, winner: 0 };
+    const counts = statMap.get(member.user_id) ?? {
+      exact: 0,
+      winner: 0,
+      difference: 0,
+      misses: 0,
+      draws: 0,
+      wildcardPoints: 0,
+    };
 
     return {
       user_id: member.user_id,
@@ -237,6 +277,10 @@ export async function getRanking(): Promise<RankingRow[]> {
       total_points: member.total_points,
       exact_count: counts.exact,
       winner_count: counts.winner,
+      difference_count: counts.difference,
+      miss_count: counts.misses,
+      draw_prediction_count: counts.draws,
+      wildcard_points: counts.wildcardPoints,
       position: index + 1,
     };
   });

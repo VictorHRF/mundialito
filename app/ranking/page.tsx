@@ -8,8 +8,13 @@ export default async function RankingPage() {
   return (
     <AppShell>
       <div className="mb-6">
-        <p className="text-sm font-semibold text-primary">Ranking</p>
-        <h1 className="text-2xl font-bold tracking-normal md:text-3xl">Tabla familiar</h1>
+        <p className="text-sm font-bold text-cup-blue">Ranking</p>
+        <h1 className="text-2xl font-bold tracking-normal md:text-3xl">
+          La batalla familiar
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Podio, apodos y reconocimientos completamente serios avalados por nadie.
+        </p>
       </div>
       <RankingTable rows={ranking} />
     </AppShell>
