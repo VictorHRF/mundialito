@@ -190,22 +190,15 @@ set search_path = public
 as $$
 declare
   starts_at timestamptz;
-  selected_stage text;
   old_starts_at timestamptz;
 begin
-  select match_date, stage
-  into starts_at, selected_stage
+  select match_date
+  into starts_at
   from public.matches
   where id = new.match_id;
 
   if starts_at is null then
     raise exception 'No encontramos el partido del comodin.';
-  end if;
-
-  if lower(selected_stage) not like '%grupo%'
-    and lower(selected_stage) not like '%group%'
-  then
-    raise exception 'El comodin diario solo esta disponible en fase de grupos.';
   end if;
 
   if now() >= starts_at then
