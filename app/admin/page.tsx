@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
-import { AdminMatchResultForm } from "@/components/admin/admin-match-result-form";
+import { AdminMatchList } from "@/components/admin/admin-match-list";
 import { AppShell } from "@/components/layout/app-shell";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getMatches, getProfile } from "@/lib/actions/queries";
@@ -23,11 +23,7 @@ export default async function AdminPage() {
           <AlertDescription>Solo usuarios admin pueden actualizar resultados.</AlertDescription>
         </Alert>
       ) : (
-        <div className="grid gap-3 lg:grid-cols-2">
-          {matches.map((match) => (
-            <AdminMatchResultForm key={match.id} match={match} />
-          ))}
-        </div>
+        <AdminMatchList matches={matches} />
       )}
     </AppShell>
   );
