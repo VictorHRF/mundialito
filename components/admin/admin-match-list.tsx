@@ -7,7 +7,7 @@ import type { MatchWithTeams } from "@/types/match";
 import { useMemo, useState } from "react";
 
 function isPlayedMatch(match: MatchWithTeams) {
-  return match.status === "finished" || new Date() >= new Date(match.match_date);
+  return match.home_score !== null && match.away_score !== null;
 }
 
 export function AdminMatchList({ matches }: { matches: MatchWithTeams[] }) {
@@ -25,7 +25,7 @@ export function AdminMatchList({ matches }: { matches: MatchWithTeams[] }) {
           <span>
             <span className="block font-semibold">Ocultar partidos ya jugados</span>
             <span className="block text-sm text-muted-foreground">
-              {playedCount} partidos jugados o iniciados
+              {playedCount} partidos con resultado capturado
             </span>
           </span>
         </span>
@@ -45,9 +45,9 @@ export function AdminMatchList({ matches }: { matches: MatchWithTeams[] }) {
         </div>
       ) : (
         <div className="rounded-lg border border-dashed bg-card p-6 text-center">
-          <Badge variant="outline">Sin partidos pendientes</Badge>
+          <Badge variant="outline">Sin resultados pendientes</Badge>
           <p className="mt-3 text-sm text-muted-foreground">
-            Todos los partidos visibles ya fueron jugados o iniciaron.
+            Todos los partidos visibles ya tienen marcador final capturado.
           </p>
         </div>
       )}
